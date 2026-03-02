@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Mastering Styrka & Hälsa (ÅK9 A-Nivå)</title>
+    <style>
+        :root {
+            --primary: #4f46e5; /* Modern Indigo */
+            --primary-dark: #3730a3;
+            --secondary: #ec4899; /* Pink accent */
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text: #1e293b;
+            --text-light: #64748b;
+            --success: #10b981;
+            --error: #ef4444;
+            --warning: #f59e0b;
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* --- Header --- */
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            padding: 1.5rem 1rem;
+            text-align: center;
+            border-bottom-left-radius: 20px;
+            border-bottom-right-radius: 20px;
+            box-shadow: 0 4px 15px rgba(79, 70, 229, 0.2);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        h1 { margin: 0; font-size: 1.4rem; font-weight: 700; letter-spacing: -0.5px; }
+        p.subtitle { margin: 5px 0 0; opacity: 0.8; font-size: 0.9rem; }
+
+        /* --- Main Content --- */
+        main {
+            flex: 1;
+            padding: 1.5rem;
+            max-width: 650px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        /* --- Menu Grid --- */
+        .menu-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .menu-btn {
+            background: var(--card-bg);
+            border: none;
+            padding: 1.5rem;
+            border-radius: 16px;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .menu-btn:active { transform: scale(0.96); }
+        .menu-btn span { font-size: 2rem; }
+        
+        /* --- Navigation --- */
+        .nav-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        .back-btn {
+            background: none;
+            border: none;
+            color: var(--text-light);
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        /* --- Sections --- */
+        .section { display: none; animation: slideUp 0.3s ease-out; }
+        .section.active { display: block; }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* --- Components --- */
+        .card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05);
+            margin-bottom: 1rem;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 1rem;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-top: 0.5rem;
+        }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-outline { background: transparent; border: 2px solid var(--primary); color: var(--primary); }
+        .btn-warning { background: var(--bg); color: var(--text-light); border: 1px solid #ddd; }
+
+        /* Flashcards Specifics */
+        .flashcard-scene { perspective: 1000px; height: 320px; cursor: pointer; }
+        .flashcard {
+            width: 100%; height: 100%; position: relative;
+            transform-style: preserve-3d; transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1);
+        }
+        .flashcard.flipped { transform: rotateY(180deg); }
+        .fc-face {
+            position: absolute; width: 100%; height: 100%;
+            backface-visibility: hidden; border-radius: 20px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            padding: 2rem; text-align: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            background: white;
+        }
+        .fc-front { border-bottom: 6px solid var(--primary); }
+        .fc-back { transform: rotateY(180deg); background: #fdfeff; border-bottom: 6px solid var(--secondary); }
+        .fc-term { font-size: 1.5rem; font-weight: 700; color: var(--primary); margin-bottom: 10px; }
+        .fc-hint { font-size: 0.8rem; color: var(--text-light); text-transform: uppercase; letter-spacing: 1px; }
+        .fc-def { font-size: 1.1rem; line-height: 1.6; color: var(--text); }
+
+        /* Cloze Specifics */
+        .cloze-text { line-height: 2; font-size: 1.1rem; }
+        .cloze-input {
+            border: none; border-bottom: 2px solid var(--primary);
+            background: rgba(79, 70, 229, 0.05);
+            color: var(--primary); font-weight: 700;
+            padding: 4px 8px; border-radius: 4px;
+            width: 140px; text-align: center; outline: none;
+            transition: all 0.3s;
+        }
+        .cloze-input.correct { background: #dcfce7; border-color: var(--success); color: var(--success); }
+        .cloze-input.incorrect { background: #fee2e2; border-color: var(--error); color: var(--error); animation: shake 0.4s; }
+        
+        @keyframes shake { 0%, 100% {transform: translateX(0);} 25% {transform: translateX(-5px);} 75% {transform: translateX(5px);} }
+
+        /* Progress Bar */
+        .progress-container { height: 6px; background: #e2e8f0; border-radius: 3px; margin: 1rem 0; overflow: hidden; }
+        .progress-fill { height: 100%; background: var(--success); width: 0%; transition: width 0.3s ease; }
+
+        /* Reasoning */
+        .reveal-content { display: none; background: #eff6ff; padding: 1rem; border-radius: 8px; border-left: 4px solid var(--primary); margin-top: 1rem; }
+        .reveal-content ul { padding-left: 1.2rem; margin: 0; }
+        .reveal-content li { margin-bottom: 0.5rem; }
+
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Styrka & Hälsa ÅK9</h1>
+    <p class="subtitle">A-Nivå Instudering</p>
+</header>
+
+<main>
+    <!-- MENU SECTION -->
+    <div id="menu" class="section active">
+        <div class="menu-grid">
+            <button class="menu-btn" onclick="startApp('flashcards')">
+                <span>🗂️</span>
+                Begrepp (Alla)
+                <div style="font-size:0.7rem; color: #666">30+ begrepp</div>
+            </button>
+            <button class="menu-btn" onclick="startApp('cloze')">
+                <span>🧩</span>
+                A-Nivå Pussel
+                <div style="font-size:0.7rem; color: #666">Fyll i orden</div>
+            </button>
+            <button class="menu-btn" onclick="startApp('reasoning')">
+                <span>🧠</span>
+                A-Resonemang
+                <div style="font-size:0.7rem; color: #666">Djupförståelse</div>
+            </button>
+            <button class="menu-btn" onclick="startApp('quiz')">
+                <span>⚡</span>
+                Snabbquiz
+                <div style="font-size:0.7rem; color: #666">Testa dig själv</div>
+            </button>
+        </div>
+    </div>
+
+    <!-- FLASHCARDS SECTION -->
+    <div id="flashcards" class="section">
+        <div class="nav-bar">
+            <button class="back-btn" onclick="showMenu()">❮ Tillbaka</button>
+            <span style="font-size: 0.9rem; font-weight: bold; color: var(--primary)" id="fc-counter">1 / 30</span>
+        </div>
+        
+        <div class="flashcard-scene" onclick="flipCard()">
+            <div class="flashcard" id="fc-card">
+                <div class="fc-face fc-front">
+                    <span class="fc-hint">Begrepp</span>
+                    <div class="fc-term" id="fc-front">Laddar...</div>
+                    <div style="font-size: 0.8rem; margin-top: 20px; color: #999;">(Klicka för att vända)</div>
+                </div>
+                <div class="fc-face fc-back">
+                    <span class="fc-hint">Förklaring</span>
+                    <div class="fc-def" id="fc-back">...</div>
+                </div>
+            </div>
+        </div>
+
+        <div style="display: flex; gap: 10px; margin-top: 20px;">
+            <button class="btn btn-primary" onclick="nextFlashcard()">Nästa kort ➔</button>
+        </div>
+    </div>
+
+    <!-- CLOZE SECTION -->
+    <div id="cloze" class="section">
+        <div class="nav-bar">
+            <button class="back-btn" onclick="showMenu()">❮ Tillbaka</button>
+            <span id="cloze-counter" style="font-weight: bold; color: var(--primary)"></span>
+        </div>
+        <div class="progress-container"><div class="progress-fill" id="cloze-progress"></div></div>
+
+        <div class="card">
+            <div id="cloze-content" class="cloze-text"></div>
+        </div>
+        
+        <p id="cloze-msg" style="text-align: center; height: 20px; font-weight: bold;"></p>
+
+        <button class="btn btn-primary" onclick="checkCloze()" id="check-btn">Rätta svar</button>
+        <button class="btn btn-warning" onclick="revealCloze()" id="reveal-btn" style="display:none; margin-top: 10px;">Jag kan inte - Visa facit</button>
+        <button class="btn btn-outline" onclick="nextCloze()" id="next-cloze-btn" style="display:none;">Nästa fråga ➔</button>
+    </div>
+
+    <!-- REASONING SECTION -->
+    <div id="reasoning" class="section">
+        <div class="nav-bar">
+            <button class="back-btn" onclick="showMenu()">❮ Tillbaka</button>
+        </div>
+
+        <div class="card">
+            <h3 style="color: var(--primary); margin-top:0;" id="reasoning-q">Fråga</h3>
+            <p style="color: var(--text-light); font-size: 0.9rem;">Formulera svaret högt för dig själv eller skriv ner det.</p>
+            <button class="btn btn-outline" onclick="document.getElementById('reasoning-reveal').style.display='block'; this.style.display='none'">Visa A-svar</button>
+            
+            <div id="reasoning-reveal" class="reveal-content">
+                <h4 style="margin-top:0;">Viktiga punkter för A:</h4>
+                <div id="reasoning-a"></div>
+            </div>
+        </div>
+
+        <button class="btn btn-primary" onclick="nextReasoning()">Ny fråga</button>
+    </div>
+
+    <!-- QUIZ SECTION -->
+    <div id="quiz" class="section">
+        <div class="nav-bar">
+            <button class="back-btn" onclick="showMenu()">❮ Tillbaka</button>
+        </div>
+        
+        <div class="card">
+            <h3 id="quiz-q" style="margin-top:0;">Fråga</h3>
+            <div id="quiz-options" style="display: flex; flex-direction: column; gap: 10px; margin-top: 20px;"></div>
+        </div>
+        <p id="quiz-feedback" style="text-align: center; font-weight: bold; min-height: 20px;"></p>
+    </div>
+
+</main>
+
+<script>
+    // --- DATABAS ---
+    const definitions = [
+        { t: "Styrka", d: "Musklernas förmåga att utveckla kraft för att övervinna ett motstånd. Beror på muskelstorlek och nervsystemets effektivitet." },
+        { t: "Repetition (rep)", d: "En fullständig rörelse i en övning, t.ex. en hel knäböj upp och ner." },
+        { t: "Set", d: "Ett antal repetitioner som utförs i följd utan vila." },
+        { t: "Volym", d: "Den totala arbetsmängden. (Set × Reps × Vikt). Hög volym = Stor belastning totalt." },
+        { t: "Intensitet", d: "Hur tung belastningen är i relation till ditt max (1RM). Tunga vikter = Hög intensitet." },
+        { t: "Maximal styrka", d: "Den största kraft en muskel kan producera vid EN repetition." },
+        { t: "1RM", d: "One Repetition Maximum. Den vikt du klarar att lyfta exakt en gång." },
+        { t: "Uthållighetsstyrka", d: "Förmågan att arbeta under längre tid eller göra många reps (12+) utan att tröttna." },
+        { t: "Explosiv styrka", d: "Förmågan att utveckla maximal kraft på så kort tid som möjligt (hastighet)." },
+        { t: "Progressiv överbelastning", d: "Att gradvis öka belastningen (vikt, reps, set) för att tvinga kroppen att utvecklas." },
+        { t: "Muskelfiber", d: "En muskelcell. Innehåller myofibriller och sarkomerer som gör att den kan dra ihop sig." },
+        { t: "Motorisk enhet", d: "En nerv och de muskelfibrer den styr. När den aktiveras dras alla dess fibrer ihop." },
+        { t: "Rekrytering", d: "När nervsystemet kopplar in FLER motoriska enheter för att orka lyfta tyngre." },
+        { t: "Proteinsyntes", d: "Processen där kroppen bygger nya proteiner (muskler). Ökar efter träning." },
+        { t: "Satellitceller", d: "Stamceller runt muskeln som aktiveras vid träning och hjälper muskeln att växa (ger nya cellkärnor)." },
+        { t: "Mekanisk spänning", d: "Den kraft/belastning fibrerna utsätts för. Den viktigaste signalen för att muskeln ska växa." },
+        { t: "Mikroskador", d: "Små skador i muskeln som sker vid träning. Triggar igång reparation och uppbyggnad." },
+        { t: "Superkompensation", d: "När kroppen efter vila har byggt upp sig STARKARE än den var innan passet." },
+        { t: "Testosteron", d: "Hormon som bygger muskler (anabolt)." },
+        { t: "Kortisol", d: "Stresshormon som bryter ner muskler (katabolt). Ökar vid för mycket stress/överträning." },
+        { t: "Rörlighet", d: "Förmågan att ta ut en rörelse i en led med full kontroll." },
+        { t: "Basövningar", d: "Övningar som tränar flera muskelgrupper samtidigt (t.ex. Knäböj)." },
+        { t: "Isolationsövningar", d: "Övningar som tränar en specifik muskel (t.ex. Bicepscurl)." },
+        { t: "Dopamin", d: "Signalsubstans för motivation och belöning." },
+        { t: "Serotonin", d: "Signalsubstans för lugn, humör och välbefinnande." },
+        { t: "Kognitiva förmågor", d: "Hjärnans funktioner: Minne, koncentration, problemlösning." },
+        { t: "Återhämtning", d: "Tiden då kroppen reparerar sig. Sker via sömn, vila och mat." }
+    ];
+
+    const clozes = [
+        { text: "När nervsystemet aktiverar fler {motoriska} {enheter} för att producera mer kraft kallas det för {rekrytering}.", hint: "Nervsystemets funktion" },
+        { text: "För att muskeln ska växa krävs {mekanisk} {spänning}, vilket uppstår när fibern belastas tungt.", hint: "Viktigaste signalen för tillväxt" },
+        { text: "Celler som ligger runt muskelfibern och hjälper till vid reparation och tillväxt kallas {satellitceller}.", hint: "En typ av stamcell" },
+        { text: "Principen att gradvis öka vikten eller antalet repetitioner för att fortsätta utvecklas kallas {progressiv} {överbelastning}.", hint: "Grundregeln för träning" },
+        { text: "Efter träning och vila blir kroppen starkare än den var innan, detta fenomen kallas {superkompensation}.", hint: "Kurvan går uppåt" },
+        { text: "Hormonet {testosteron} bygger upp muskler, medan stresshormonet {kortisol} bryter ner dem.", hint: "Hormoner" },
+        { text: "Övningar som aktiverar flera muskelgrupper samtidigt, som knäböj, kallas {basövningar}.", hint: "Grundläggande övningar" },
+        { text: "Träning frigör {dopamin} som ger motivation och {serotonin} som ger lugn.", hint: "Hjärnans kemi" },
+        { text: "Vid styrketräning ökar kroppens {proteinsyntes}, vilket är processen där nya proteiner bildas i muskeln.", hint: "Bygger muskler" }
+    ];
+
+    const reasonings = [
+        { 
+            q: "Förklara fysiologiskt hur en muskel blir större (Hypertrofi) på A-nivå.", 
+            a: "<ul><li>Mekanisk spänning (tung belastning) skapar mikroskador.</li><li>Satellitceller aktiveras och donerar cellkärnor till fibern.</li><li>Proteinsyntesen ökar (kroppen bygger mer protein än vad som bryts ner).</li><li>Kräver: Överskott av energi + Vila (Superkompensation).</li></ul>" 
+        },
+        { 
+            q: "Resonera kring skillnaden på att träna för Maximal Styrka vs Uthållighet.", 
+            a: "<ul><li><strong>Maximal:</strong> Hög intensitet (85-100% av 1RM), 1-5 reps. Kräver lång vila (3 min) för att nervsystemet/ATP ska återhämta sig. Förbättrar rekrytering av motoriska enheter.</li><li><strong>Uthållighet:</strong> Lägre intensitet, 12+ reps. Kort vila. Förbättrar tålighet mot mjölksyra och kapillärtäthet.</li></ul>" 
+        },
+        { 
+            q: "Hur påverkar progressiv överbelastning och vila resultatet?", 
+            a: "<ul><li>Progressiv överbelastning är 'gasen' – utan ökad belastning adapterar kroppen och slutar växa.</li><li>Vila är 'bränslet' – träning är nedbrytande (katabolt). Uppbyggnaden sker bara vid vila.</li><li>Obalans leder till överträning (högt kortisol, skaderisk).</li></ul>" 
+        },
+        {
+            q: "Beskriv de kognitiva och psykiska effekterna av träning.",
+            a: "<ul><li><strong>Kognitivt:</strong> Ökat blodflöde till hjärnan → Bättre minne och koncentration (Hippocampus påverkas).</li><li><strong>Psykiskt:</strong> Dopamin (motivation) och Serotonin (lugn) frigörs. Motverkar depression och stress.</li><li>Stärkt 'Self-efficacy' (tilltro till sin förmåga).</li></ul>"
+        }
+    ];
+
+    const quizQs = [
+        { q: "Vad är den viktigaste signalen för att en muskel ska växa?", o: ["Hög puls", "Mekanisk spänning", "Mycket svett"], a: 1 },
+        { q: "Vad gör en 'satellitcell'?", o: ["Transporterar syre", "Bidrar med cellkärnor vid muskelbygge", "Bryter ner mjölksyra"], a: 1 },
+        { q: "Vad innebär 'Superkompensation'?", o: ["Att man äter för mycket", "Att kroppen blir svagare efter passet", "Att kroppen bygger sig starkare efter vila"], a: 2 },
+        { q: "Vilket hormon är muskelnedbrytande (katabolt)?", o: ["Testosteron", "Kortisol", "Dopamin"], a: 1 },
+        { q: "Om du vill träna maximal styrka, hur bör du lägga upp passet?", o: ["Lätta vikter, 20 reps", "Tunga vikter, 1-5 reps, lång vila", "Medeltungt, kort vila"], a: 1 },
+        { q: "Vad menas med en 'motorisk enhet'?", o: ["En maskin på gymmet", "En nerv och de muskelfibrer den styr", "En hel muskelgrupp"], a: 1 }
+    ];
+
+    // --- LOGIC ---
+    let currentFC = 0;
+    let fcList = [];
+    let currentCloze = 0;
+    let currentR = 0;
+    let quizList = [];
+
+    // Helper: Shuffle Array
+    function shuffle(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    }
+
+    function showMenu() {
+        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+        document.getElementById('menu').classList.add('active');
+    }
+
+    function startApp(mode) {
+        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+        document.getElementById(mode).classList.add('active');
+
+        if(mode === 'flashcards') {
+            fcList = shuffle([...definitions]); // Clone and shuffle
+            currentFC = 0;
+            renderFC();
+        } else if (mode === 'cloze') {
+            currentCloze = 0;
+            renderCloze();
+        } else if (mode === 'reasoning') {
+            currentR = 0;
+            shuffle(reasonings);
+            renderReasoning();
+        } else if (mode === 'quiz') {
+            quizList = shuffle([...quizQs]);
+            renderQuiz();
+        }
+    }
+
+    // Flashcards
+    function renderFC() {
+        const item = fcList[currentFC];
+        document.getElementById('fc-front').innerText = item.t;
+        document.getElementById('fc-back').innerText = item.d;
+        document.getElementById('fc-card').classList.remove('flipped');
+        document.getElementById('fc-counter').innerText = `${currentFC + 1} / ${fcList.length}`;
+    }
+    function flipCard() {
+        document.getElementById('fc-card').classList.toggle('flipped');
+    }
+    function nextFlashcard() {
+        currentFC = (currentFC + 1) % fcList.length;
+        renderFC();
+    }
+
+    // Cloze
+    function renderCloze() {
+        const item = clozes[currentCloze];
+        document.getElementById('cloze-counter').innerText = `Pussel ${currentCloze + 1}/${clozes.length}`;
+        
+        let html = `<p style="color:#666; font-size:0.9rem; font-style:italic;">Ledtråd: ${item.hint}</p>`;
+        html += item.text.replace(/\{([^}]+)\}/g, (match, p1) => {
+            return `<input type="text" class="cloze-input" data-ans="${p1.toLowerCase()}" autocomplete="off">`;
+        });
+        
+        document.getElementById('cloze-content').innerHTML = html;
+        document.getElementById('cloze-msg').innerText = "";
+        document.getElementById('check-btn').style.display = "block";
+        document.getElementById('next-cloze-btn').style.display = "none";
+        document.getElementById('reveal-btn').style.display = "none";
+        
+        // Update bar
+        document.getElementById('cloze-progress').style.width = ((currentCloze) / clozes.length * 100) + "%";
+    }
+
+    function checkCloze() {
+        const inputs = document.querySelectorAll('.cloze-input');
+        let allCorrect = true;
+        inputs.forEach(inp => {
+            if(inp.value.trim().toLowerCase() === inp.dataset.ans) {
+                inp.classList.add('correct');
+                inp.classList.remove('incorrect');
+            } else {
+                inp.classList.add('incorrect');
+                inp.classList.remove('correct');
+                allCorrect = false;
+            }
+        });
+
+        if(allCorrect) {
+            document.getElementById('cloze-msg').innerText = "Rätt svar! Bra jobbat.";
+            document.getElementById('cloze-msg').style.color = "var(--success)";
+            document.getElementById('check-btn').style.display = "none";
+            document.getElementById('reveal-btn').style.display = "none";
+            document.getElementById('next-cloze-btn').style.display = "block";
+        } else {
+            document.getElementById('cloze-msg').innerText = "Fel svar. Försök igen eller se facit.";
+            document.getElementById('cloze-msg').style.color = "var(--error)";
+            // Show reveal button if wrong
+            document.getElementById('reveal-btn').style.display = "block";
+        }
+    }
+
+    function revealCloze() {
+        const inputs = document.querySelectorAll('.cloze-input');
+        inputs.forEach(inp => {
+            inp.value = inp.dataset.ans; // Fill correct answer
+            inp.classList.add('correct');
+            inp.classList.remove('incorrect');
+        });
+        document.getElementById('cloze-msg').innerText = "Här är de rätta svaren.";
+        document.getElementById('cloze-msg').style.color = "var(--warning)";
+        document.getElementById('check-btn').style.display = "none";
+        document.getElementById('reveal-btn').style.display = "none";
+        document.getElementById('next-cloze-btn').style.display = "block";
+    }
+
+    function nextCloze() {
+        currentCloze = (currentCloze + 1) % clozes.length;
+        renderCloze();
+    }
+
+    // Reasoning
+    function renderReasoning() {
+        const item = reasonings[currentR];
+        document.getElementById('reasoning-q').innerText = item.q;
+        document.getElementById('reasoning-a').innerHTML = item.a;
+        document.getElementById('reasoning-reveal').style.display = 'none';
+        
+        // Reset button visibility
+        const btns = document.getElementById('reasoning').querySelectorAll('.btn-outline');
+        btns.forEach(b => b.style.display = 'block');
+    }
+    function nextReasoning() {
+        currentR = (currentR + 1) % reasonings.length;
+        renderReasoning();
+    }
+
+    // Quiz
+    function renderQuiz() {
+        if(quizList.length === 0) {
+            document.getElementById('quiz-q').innerText = "Bra jobbat! Inga fler frågor.";
+            document.getElementById('quiz-options').innerHTML = "";
+            return;
+        }
+        const q = quizList[0];
+        document.getElementById('quiz-q').innerText = q.q;
+        document.getElementById('quiz-feedback').innerText = "";
+        
+        let html = "";
+        q.o.forEach((opt, idx) => {
+            html += `<button class="btn btn-outline" onclick="answerQuiz(${idx}, ${q.a}, this)">${opt}</button>`;
+        });
+        document.getElementById('quiz-options').innerHTML = html;
+    }
+
+    function answerQuiz(selected, correct, btn) {
+        if(selected === correct) {
+            btn.style.background = "var(--success)";
+            btn.style.color = "white";
+            btn.style.borderColor = "var(--success)";
+            document.getElementById('quiz-feedback').innerText = "Korrekt!";
+            document.getElementById('quiz-feedback').style.color = "var(--success)";
+            setTimeout(() => {
+                quizList.shift();
+                renderQuiz();
+            }, 1200);
+        } else {
+            btn.style.background = "var(--error)";
+            btn.style.color = "white";
+            btn.style.borderColor = "var(--error)";
+            btn.innerText += " (Fel)";
+        }
+    }
+</script>
+
+</body>
+</html>
